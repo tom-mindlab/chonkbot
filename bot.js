@@ -11,29 +11,6 @@ const randRange = (min, max) => {
     return Math.floor(Math.random() * (max_ - min_ + 1)) + min_;
 }
 
-const readLastLine = (path) => {
-    return new Promise((res, rej) => {
-        const r_stream = fs.createReadStream(path);
-        const rli = readline.createInterface({
-            input: r_stream,
-            crlfDelay: Infinity
-        });
-
-        rli.on(`error`, (err) => {
-            rej(new Error(err));
-        })
-
-        let last;
-        rli.on(`line`, (line) => {
-            last = line;
-        })
-
-        rli.on(`close`, () => {
-            res(last);
-        })
-    });
-}
-
 function makeDirForUser(user) {
     return new Promise((res, rej) => {
         fs.mkdir(`./users/${user.username}`, (err) => {
@@ -104,7 +81,88 @@ bot.on('ready', () => {
     console.log('Once the bot is ready this message will show!');
 });
 
+
+const pathExists = (path) => {
+    return new Promise((res) => {
+        fs.exists(path, (exists) => {
+            res(exists);
+        })
+    });
+};
+
+const forceWriteFile = async (path, data) => {
+    const split = path.split(`/`);
+    const [dir_path, file_name] = [split.slice(0, -1).reduce((acc, v) => acc + `/` + v), split[split.length - 1]];
+
+    const dir_exists = await pathExists(dir_path);
+    await new Promise((res, rej) => {
+        if (dir_exists) {
+            res();
+        }
+        fs.mkdir(dir_path, { recursive: true }, (err) => {
+            if (err) {
+                rej(new Error(err));
+            }
+            res();
+        });
+    });
+
+    await new Promise((res, rej) => {
+        fs.writeFile(path, data, (err) => {
+            if (err) {
+                rej(new Error(err));
+            }
+            res();
+        });
+    })
+};
+
+
+
+const logMessage = async (username, message) => {
+    console.log(`[${message.channel.name}] ${username}: ${message.content}`);
+
+    const dir_path = `./users/${username}`;
+    const file_path = `${dir_path}/message_log.json`;
+
+    const file_exists = await pathExists(file_path);
+    if (file_exists) {
+        const json_log = await new Promise((res, rej) => {
+            fs.readFile(file_path, (err, data) => {
+                if (err) {
+                    rej(new Error(err));
+                }
+                res(JSON.parse(data));
+            })
+        });
+        json_log.messages.push({
+            channel: message.channel.name,
+            content: message.content,
+            mentions: {
+                users: message.mentions.users,
+                members: message.mentions.members,
+                channels: message.mentions.channels,
+                roles: message.mentions.roles
+            }
+        });
+        await forceWriteFile(file_path, JSON.stringify(json_log));
+    } else {
+        await forceWriteFile(file_path, JSON.stringify({
+            created: new Date().toUTCString(),
+            username: username,
+            messages: [
+                {
+                    channel: message.channel.name,
+                    content: message.content,
+                    mentions: {}
+                }
+            ]
+        }));
+    }
+}
+
 bot.on('message', async (message) => {
+    logMessage(message.member.user.username, message);
     if (message.content[0] === `>`) {
         const [command, ...params] = message.content.substr(1).split(` `);
         switch (command) {
@@ -131,7 +189,6 @@ bot.on('message', async (message) => {
                                 });
                             }));
                             const last_entry = json.status_updates[json.status_updates.length - 1];
-                            console.log(last_entry);
                             if (last_entry.new_status === `online`) {
                                 return `${params[0]} is online right now! Status last became \`${last_entry.new_status}\` at ${last_entry.date}`;
                             } else {
@@ -143,12 +200,18 @@ bot.on('message', async (message) => {
                         
                     })());
                 }
+                break;
+            case `stats`:
+                if (params.length < 1) {
+                    message.channel.send(`Who's status? Missing \`<username>\``);
+                } else {
+
+                }
         }
     }
 });
 
 bot.on(`presenceUpdate`, async (old_member, new_member) => {
-    console.log(`PU::${old_member.user.username}:${old_member.user.presence.status}|${new_member.user.username}:${new_member.user.presence.status}`);
     const dir_path = `./users/${old_member.user.username}`;
 
     const dir_exists = await new Promise(res => {
@@ -157,10 +220,8 @@ bot.on(`presenceUpdate`, async (old_member, new_member) => {
         })
     });
     if (!dir_exists) {
-        console.log(`need to make this dir!`);
         await makeDirForUser(old_member.user);
     }
     await logStatus(old_member.user.username, old_member.user.presence.status, new_member.user.presence.status);
-})
+});
 
-bot.login(`NTM1NTQxMDQ1MDMxODYyMzAy.DyJpdg.rHek3NEvGHSBkCkkkxyxlNNsiwQ`);
