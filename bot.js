@@ -164,7 +164,8 @@ const logMessage = async (username, message) => {
 bot.on('message', async (message) => {
     logMessage(message.member.user.username, message);
     if (message.content[0] === `>`) {
-        const [command, ...params] = message.content.substr(1).split(` `);
+        const command = `${message.content.substr(1, message.content.indexOf(` `) - 1)}`;
+        const params = message.content.substr(message.content.indexOf(` `) + 1).split(`, `);
         switch (command) {
             case `random`:
                 if (params.length < 2) {
@@ -201,11 +202,14 @@ bot.on('message', async (message) => {
                     })());
                 }
                 break;
-            case `stats`:
+            case `choose`:
+                console.log(`choosing`);
                 if (params.length < 1) {
-                    message.channel.send(`Who's status? Missing \`<username>\``);
+                    message.channel.send(`I can't choose if I have no options :robot:`);
+                } else if (params.length === 1) {
+                    message.channel.send(`Is this really a choice if I only have one option..?`);
                 } else {
-
+                    message.channel.send(`${params[randRange(0, params.length - 1)]}`)
                 }
         }
     }
