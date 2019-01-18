@@ -156,6 +156,8 @@ const logMessage = async (username, message) => {
                     content: message.content,
                     mentions: {}
                 }
+                
+                
             ]
         }));
     }
