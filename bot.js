@@ -211,6 +211,36 @@ bot.on('message', async (message) => {
                 } else {
                     message.channel.send(`${params[randRange(0, params.length - 1)]}`)
                 }
+
+                break;
+            case `Heil the Chonkiness`: message.channel.send(`RESISTANCE IS FUTILE`)
+                
+                break;
+            case`KFC`: message.channel.send(`:snowflake:`)
+                
+                break;
+            case `rock` || `spock` || `paper` || `lizard` || `scissors` || `chonk`:
+                message.channel.send(`Feelin' lucky, punk?`);
+                if (params.length < 1) {
+                    message.channel.send(`Guess not, play a real hand you yellabelly! :gun:`);
+                } else {
+                    var hand = ['rock', 'spock', 'paper', 'lizard', 'scissors', 'chonk'];
+                    var play = hand[Math.floor(Math.random()*hand.length)];
+                    message.channel.send(`suck on my` + play);
+                    
+                    if(case==hand){
+                        message.channel.send(`DRAW: Chonkbot wins!`);
+                    } else if (
+                        
+                            if( difference == 1 or difference == 2 ):
+        print "Computer wins!"
+    elif ( difference == 4 or difference == 3 ):
+        print "Player wins!"
+    elif( difference == 0 ):
+        print "Player and computer tie!"
+                    }
+                }
+                
         }
     }
 });
