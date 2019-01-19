@@ -213,10 +213,10 @@ bot.on('message', async (message) => {
                 }
 
                 break;
-            case `Heil the Chonkiness`: message.channel.send(`RESISTANCE IS FUTILE`)
+            case `Heil the Chonkiness`: return`RESISTANCE IS FUTILE`
                 
                 break;
-            case`KFC`: message.channel.send(`:snowflake:`)
+            case`KFC`: return`:snowflake:`
                 
                 break;
             case `rock` || `spock` || `paper` || `lizard` || `scissors` || `chonk`:
@@ -228,17 +228,17 @@ bot.on('message', async (message) => {
                     var play = hand[Math.floor(Math.random()*hand.length)];
                     message.channel.send(`suck on my` + play);
                     
-                    #NEED STRINGS
+             #NEED STRINGS
                     if(case==hand){
                         message.channel.send(`TIE: CHONKBOT STILL WINS!`);
-                        #ASSIGN NUMBERS OR CREATE LIST WITH STRINGS?
+             #ASSIGN NUMBERS OR CREATE LIST WITH STRINGS?
                     } else if ([LOCATION OF CASE IN LIST - LOCATION OF HAND] == 1 || == 2 ):
-        message.channel.send(`KING CHONKBOT WINS`)
-    else if ([LOCATION OF CASE IN LIST - LOCATION OF HAND] == 3 || == 4 ):
-        message.channel.send(`BOTH WIN`)
-                    }
+                        message.channel.send(`KING CHONKBOT WINS`)
+                    else if {([LOCATION OF CASE IN LIST - LOCATION OF HAND] == 3 || == 4 ):
+                        } message.channel.send(`BOTH WIN`)
+                    } else {} message.channel.send(`CHONKBOT WINS BY CHONK`)
+                    
                 }
-                
         }
     }
 });
