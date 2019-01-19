@@ -223,6 +223,9 @@ bot.on('message', async (message) => {
                 message.channel.send(`Feelin' lucky, punk?`);
                 if (params.length < 1) {
                     message.channel.send(`Guess not, play a real hand you yellabelly! :gun:`);
+                    else if (params.length > 1) {
+                        message.channel.send(`ONE HAND AT A TIME`)
+                    }
                 } else {
                     var hand = ['rock', 'spock', 'paper', 'lizard', 'scissors', 'chonk'];
                     var play = hand[Math.floor(Math.random()*hand.length)];
@@ -233,9 +236,9 @@ bot.on('message', async (message) => {
                         message.channel.send(`TIE: CHONKBOT STILL WINS!`);
              #ASSIGN NUMBERS OR CREATE LIST WITH STRINGS?
                     } else if ([LOCATION OF CASE IN LIST - LOCATION OF HAND] == 1 || == 2 ):
-                        message.channel.send(`KING CHONKBOT WINS`)
+                        message.channel.send(`KING CHONKBOT WINS`);
                     else if {([LOCATION OF CASE IN LIST - LOCATION OF HAND] == 3 || == 4 ):
-                        } message.channel.send(`BOTH WIN`)
+                        } message.channel.send(`BOTH WIN`);
                     } else {} message.channel.send(`CHONKBOT WINS BY CHONK`)
                     
                 }
