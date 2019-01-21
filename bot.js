@@ -148,7 +148,6 @@ const logMessage = async (message) => {
     const user_file_path = `./users/${username}/message_log.json`;
     const user_data = await readFileIfExists(user_file_path);
     if (user_data) {
-        console.log(JSON.parse(user_data));
         const out = JSON.parse(user_data);
         out.messages.push({
             date: new Date().toUTCString(),
@@ -217,20 +216,34 @@ const logMessage = async (message) => {
     }
 }
 
-const executeCommand = async (command, params) => {
+const shuffleArr = (arr) => {
+	const output_arr = arr.slice();
+    let currentIndex = output_arr.length;
+
+    while (currentIndex !== 0) {
+        const randIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+        
+        // swap these elements
+        [output_arr[currentIndex], output_arr[randIndex]] = [output_arr[randIndex], output_arr[currentIndex]];
+    }
+    return output_arr;
+}
+
+const executeCommand = async (command, params, mentions, channel, authorised) => {
     switch (command) {
         case `random`:
             if (params.length < 2) {
-                message.channel.send(`Need a numeric range \`<min>\` \`<max>\` to produce a random number`);
+                channel.send(`Need a numeric range \`<min>\` \`<max>\` to produce a random number`);
             } else {
-                message.channel.send(`${randRange(params[0], params[1])}`)
+                channel.send(`${randRange(params[0], params[1])}`)
             }
             break;
         case `status`:
             if (params.length < 1) {
-                message.channel.send(`Who's status? Missing \`<username>\``);
+                channel.send(`Who's status? Missing \`<username>\``);
             } else {
-                message.channel.send(await (async () => {
+                channel.send(await (async () => {
                     try {
                         const json = JSON.parse(await new Promise((res, rej) => {
                             fs.readFile(`./users/${params[0]}/status.json`, (err, data) => {
@@ -256,13 +269,77 @@ const executeCommand = async (command, params) => {
             break;
         case `choose`:
             if (params.length < 1) {
-                message.channel.send(`I can't choose if I have no options :robot:`);
+                channel.send(`I can't choose if I have no options :robot:`);
             } else if (params.length === 1) {
-                message.channel.send(`Is this really a choice if I only have one option..?`);
+                channel.send(`Is this really a choice if I only have one option..?`);
             } else {
-                message.channel.send(`${params[randRange(0, params.length - 1)]}`)
+                channel.send(`${params[randRange(0, params.length - 1)]}`)
             }
+            break;
+        case `userstats`:
+            if (params.length < 1) {
+                channel.send(`Who's status? Missing \`<username>\`|\`snowflake\``);
+            } else {
+                const log_data = await readFileIfExists(`users/${params[0]}/message_log.json`);
+                if (log_data) {
+                    channel.send(`${params[0]} has sent ${JSON.parse(log_data).messages.length} messages (that I've recorded)!`);
+                } else {
+                    channel.send(`Something went wrong (I probably have no records for ${params[0]} yet)!`);
+                }
+            }
+            break;
+        case `8ball`: 
+            if (params.length < 1) {
+                channel.send(`You need to ask a question first...`);
+            } else {
+                const answers = await readFileIfExists(`8ball.json`);
+                if (answers) {
+                    const out = JSON.parse(answers);
+                    channel.send(out.answers[randRange(0, out.answers.length - 1)]);
+                } else {
+                    channel.send(`The 8ball has been misplaced, can't answer`);
+                }
+            }
+            break;
+        case `rank`:
+            if (params.length < 1) {
+                channel.send(`You haven't given my anything to rank!`);
+            } else if (params.length === 1) {
+                channel.send(`Not much of a ranking with only one item...`);
+                channel.send(`${params[0]}`);
+            } else {
+                let out = ``;
+                for (const [index, item] of shuffleArr(params).entries()) {
+                    out = `${out}${index + 1}: ${item}\n`;
+                }
+                channel.send(out);
+            }
+            break;
+        case `kick`:
+            if (!authorised) {
+                channel.send(`You aren't authorised to use this command`);
+            } else if (params.length < 1) {
+                channel.send(`Kick who? Missing \`<username>\``);
+            } else {
+                for (const member of mentions.members) {
+                    member.kick(`${params[1] || ``}`);
+                }
+            }
+            
     }
+}
+
+const authorisedUser = async (user) => {
+    const au_data = await readFileIfExists(`./authorised_users.json`);
+    if (au_data) {
+        const out = JSON.parse(au_data);
+        for (const authorised_user of out.authorised_users) {
+            if (user.id === authorised_user.id) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bot.on('message', async (message) => {
@@ -274,7 +351,7 @@ bot.on('message', async (message) => {
     if (message.content[0] === `>`) {
         const command = `${message.content.substr(1, message.content.indexOf(` `) - 1)}`;
         const params = message.content.substr(message.content.indexOf(` `) + 1).split(`, `);
-        executeCommand(command, params);
+        executeCommand((command) ? command : message.content, params, message.mentions, message.channel, await authorisedUser(message.member.user));
     }
 });
 
