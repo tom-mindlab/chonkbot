@@ -176,6 +176,8 @@ const logMessage = async (message) => {
                         roles: message.mentions.roles.map(v => v.name)
                     }
                 }
+                
+                
             ]
         }));
     }
